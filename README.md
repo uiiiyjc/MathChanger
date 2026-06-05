@@ -1,0 +1,2 @@
+# MathChanger
+MathChanger旨在通過AI將圖片中的數學過程轉換為LaTex格式
