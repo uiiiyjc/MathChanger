@@ -1,2 +1,6 @@
 # MathChanger
 MathChanger旨在通過AI將圖片中的數學過程轉換為LaTex格式
+說實話,這個project我現在是沒有心情去做的
+等到回來我閒時間的時候再去做吧
+畢竟現在AI plus anything比較熱門
+我也就跟風打個底
