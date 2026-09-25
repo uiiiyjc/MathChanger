@@ -4,3 +4,6 @@ MathChanger旨在通過AI將圖片中的數學過程轉換為LaTex格式
 等到回來我閒時間的時候再去做吧
 畢竟現在AI plus anything比較熱門
 我也就跟風打個底
+本來想著使用replit去做這個priject的
+結果就是App根本打不開
+我也沒辦法了
