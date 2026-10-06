@@ -1,7 +1,7 @@
 name: math_changer
 description: MathChanger - AI-powered conversion of handwritten math steps into LaTeX.
 publish_to: "none"
-version: 0.1.0+1
+version: 0.2.0+2
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -12,6 +12,13 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.2.2
   image_picker: ^1.1.2
+  # Local-only persistence. No backend, no account, no recurring cost.
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  # The API key is user-supplied at runtime, so it must not sit in plain
+  # preferences. flutter_secure_storage uses Keychain / Keystore.
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:
