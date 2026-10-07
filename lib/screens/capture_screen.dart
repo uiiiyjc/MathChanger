@@ -3,10 +3,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../app_services.dart';
 import '../services/math_ai_service.dart';
+import 'history_screen.dart';
 import 'result_screen.dart';
+import 'settings_screen.dart';
 
 /// Home screen: take or choose a photo, then convert it to LaTeX.
+///
+/// The camera and gallery are the operating system's own pickers, reached
+/// through `image_picker` - the app does not ship a custom camera UI.
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({super.key});
 
@@ -16,7 +22,6 @@ class CaptureScreen extends StatefulWidget {
 
 class _CaptureScreenState extends State<CaptureScreen> {
   final ImagePicker _picker = ImagePicker();
-  final MathAiService _service = MathAiService.fromEnvironment();
 
   File? _image;
   bool _busy = false;
@@ -35,13 +40,31 @@ class _CaptureScreenState extends State<CaptureScreen> {
     final image = _image;
     if (image == null || _busy) return;
 
+    final services = AppServices.instance;
+    final settings = await services.settings.load();
+
+    if (!settings.isConfigured) {
+      if (!mounted) return;
+      await _promptForApiKey();
+      return;
+    }
+
     setState(() {
       _busy = true;
       _error = null;
     });
 
     try {
-      final result = await _service.analyseImage(image);
+      final service = MathAiService(
+        apiKey: settings.apiKey,
+        endpoint: settings.endpoint,
+        model: settings.model,
+      );
+      final result = await service.analyseImage(image);
+
+      // Local-only persistence: the record never leaves the device.
+      await services.history.save(result: result, sourceImage: image);
+
       if (!mounted) return;
       await Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ResultScreen(result: result)),
@@ -53,11 +76,61 @@ class _CaptureScreenState extends State<CaptureScreen> {
     }
   }
 
+  Future<void> _promptForApiKey() async {
+    final goToSettings = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('尚未設定 API Key'),
+        content: const Text('辨識需要一組 API Key。請先到設定頁填入你的服務資訊。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('稍後'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('前往設定'),
+          ),
+        ],
+      ),
+    );
+
+    if (goToSettings == true && mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      );
+    }
+  }
+
+  Future<void> _openSettings() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('MathChanger')),
+      appBar: AppBar(
+        title: const Text('MathChanger'),
+        actions: [
+          IconButton(
+            tooltip: '歷史記錄',
+            icon: const Icon(Icons.history),
+            onPressed: _busy
+                ? null
+                : () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                    ),
+          ),
+          IconButton(
+            tooltip: '設定',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: _busy ? null : _openSettings,
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

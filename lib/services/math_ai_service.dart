@@ -8,15 +8,10 @@ import '../models/math_step.dart';
 /// Sends an image of mathematics to a vision-capable model and parses the
 /// answer into a [RecognitionResult].
 ///
-/// Configuration comes from `--dart-define`, so no secret ever lands in the
-/// repository:
-///
-/// ```sh
-/// flutter run \
-///   --dart-define=MATH_AI_API_KEY=sk-xxx \
-///   --dart-define=MATH_AI_ENDPOINT=https://api.openai.com/v1/chat/completions \
-///   --dart-define=MATH_AI_MODEL=gpt-4o-mini
-/// ```
+/// The endpoint, model and key arrive from `AiSettings`, which the user fills in
+/// on the settings screen, so no credential is ever compiled into the build.
+/// `--dart-define` values are only used as a developer fallback before anything
+/// has been saved.
 class MathAiService {
   MathAiService({
     required this.apiKey,
@@ -24,18 +19,6 @@ class MathAiService {
     required this.model,
     http.Client? client,
   }) : _client = client ?? http.Client();
-
-  factory MathAiService.fromEnvironment() => MathAiService(
-        apiKey: const String.fromEnvironment('MATH_AI_API_KEY'),
-        endpoint: const String.fromEnvironment(
-          'MATH_AI_ENDPOINT',
-          defaultValue: 'https://api.openai.com/v1/chat/completions',
-        ),
-        model: const String.fromEnvironment(
-          'MATH_AI_MODEL',
-          defaultValue: 'gpt-4o-mini',
-        ),
-      );
 
   final String apiKey;
   final String endpoint;
@@ -54,10 +37,8 @@ Rules:
 ''';
 
   Future<RecognitionResult> analyseImage(File image) async {
-    if (apiKey.isEmpty) {
-      throw StateError(
-        'MATH_AI_API_KEY is empty. Pass it via --dart-define=MATH_AI_API_KEY=...',
-      );
+    if (apiKey.trim().isEmpty) {
+      throw StateError('尚未設定 API Key，請先到設定頁填入。');
     }
 
     final bytes = await image.readAsBytes();
