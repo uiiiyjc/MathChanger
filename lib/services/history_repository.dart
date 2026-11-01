@@ -161,7 +161,7 @@ CREATE TABLE $_table (
   /// Returns the number of rows removed.
   Future<int> deleteOlderThan(DateTime cutoff) async {
     final db = await _db;
-    final where = '$_columnCreatedAt < ?';
+    const where = '$_columnCreatedAt < ?';
     final args = [cutoff.toIso8601String()];
 
     final stale = await db.query(
