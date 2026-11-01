@@ -1,0 +1,60 @@
+name: Flutter Analyze
+
+# Scope note: this repository currently holds only `lib/`, `pubspec.yaml`,
+# `analysis_options.yaml` and docs. There is no `ios/`, `android/`, `web/` or
+# `test/` directory, so this workflow deliberately stops at static analysis:
+# there is nothing to build and no tests to run yet.
+#
+# Once the platform folders exist (`flutter create .`), add `flutter test` and
+# a `flutter build` job here. Until then, a green run means "the code parses and
+# satisfies the lint rules" - not "the app compiles".
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: analyze-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The stable channel rather than a pinned SDK version: pubspec.yaml only
+      # requires Dart >=3.4.0 <4.0.0, and hardcoding a version here invites
+      # drift from whatever contributors have installed.
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Advisory only. Formatting drift is not a correctness problem, so it is
+      # reported in the log but does not fail the run.
+      - name: Format check
+        continue-on-error: true
+        run: dart format --output=none --set-exit-if-changed lib
+
+      # Errors and warnings are fatal. Infos are not: a project this young
+      # would otherwise go red over style hints alone.
+      - name: Analyze
+        run: flutter analyze

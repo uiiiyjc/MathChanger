@@ -26,10 +26,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _clearing = false;
   bool _retentionBusy = false;
   int _entryCount = 0;
-  RetentionPolicy _policy = const RetentionPolicy();
 
-  /// Bound to the slider, which works in doubles. Kept separate from [_policy]
-  /// so an unconfirmed drag can be snapped back.
+  /// Bound to the slider, which works in doubles. Kept separate from the
+  /// persisted policy so an unconfirmed drag can be snapped back.
   double _sliderDays = RetentionPolicy.defaultDays.toDouble();
 
   @override
@@ -56,7 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _apiKeyController.text = settings.apiKey;
       _endpointController.text = settings.endpoint;
       _modelController.text = settings.model;
-      _policy = policy;
       _sliderDays = policy.days.toDouble();
       _entryCount = count;
       _loading = false;
