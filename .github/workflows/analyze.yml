@@ -33,13 +33,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # The stable channel rather than a pinned SDK version: pubspec.yaml only
-      # requires Dart >=3.4.0 <4.0.0, and hardcoding a version here invites
-      # drift from whatever contributors have installed.
+      # Pinned deliberately, not `channel: stable`.
+      #
+      # On 2026-11-09 the stable channel moved from 3.47.9 to 3.50.0, which
+      # deprecates `package:flutter/material.dart` in favour of
+      # `package:material_ui/material_ui.dart`. That turned this job red with no
+      # application code changing at all.
+      #
+      # Bumping this number is now a deliberate, reviewable act. Expect the
+      # material_ui migration to come with it: every screen imports
+      # `package:flutter/material.dart`, and `flutter analyze` fails on the
+      # resulting infos.
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.47.9'
           cache: true
 
       - name: Flutter version
